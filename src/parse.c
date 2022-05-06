@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/05/02 22:05:25 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/06 23:24:02 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/07 00:24:56 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ int	fill_map(t_fdf *fdf, char *name)
 			fdf->map[y][x].z = ft_atoi(line);
 			fdf->map[y][x].y = y;
 			fdf->map[y][x].x = x;
+			printf("map[%i][%i]: x = %f, y = %f, z = %f\n", y, x, fdf->map[y][x].x, fdf->map[y][x].y, fdf->map[y][x].z);
 			while(*line >= '0' && *line <= '9')
 				line++;
 		}
@@ -81,10 +82,10 @@ int	fill_map(t_fdf *fdf, char *name)
 	printf("final array H: [%i] W: [%i]\n", fdf->height, fdf->width);
 	while(++y < fdf->height)
 	{
-		x = 0;
-		printf("[%i]", fdf->map[y][0]);
+		x = -1;
+		// printf("[%i]", fdf->map[y][0]);
 		while(++x < fdf->width)
-			printf("[%i]", fdf->map[y][x]);
+			printf("[%f]", fdf->map[y][x].z);
 		printf("\n");
 	}
 	return (0);

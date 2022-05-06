@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/06 23:25:19 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/07 00:07:53 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,25 +41,13 @@ void my_keyhook(mlx_key_data_t keydata, void* param)
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_ESCAPE))
 		mlx_close_window(fdf->mlx);
 	if (keydata.key == MLX_KEY_UP && keydata.action == MLX_PRESS)
-	{
 		fdf->settings->shift_y -= 1;
-		// printf("y?: %f\n", fdf->settings->shift_y);
-	}
 	if (keydata.key == MLX_KEY_DOWN && keydata.action == MLX_PRESS)
-	{
 		fdf->settings->shift_y += 1;
-		// printf("y?: %f\n", fdf->settings->shift_y);
-	}
 	if (keydata.key == MLX_KEY_RIGHT && keydata.action == MLX_PRESS)
-	{
 		fdf->settings->shift_x += 1;
-		// printf("x?: %f\n", fdf->settings->shift_x);
-	}
 	if (keydata.key == MLX_KEY_LEFT && keydata.action == MLX_PRESS)
-	{
 		fdf->settings->shift_x -= 1;
-		// printf("x?: %f\n", fdf->settings->shift_x);
-	}
 	if (keydata.key == MLX_KEY_J && keydata.action == MLX_PRESS)
 		puts("Hello ");
 	if (keydata.key == MLX_KEY_K && keydata.action == MLX_RELEASE)

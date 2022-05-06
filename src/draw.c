@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/05/02 22:05:26 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/06 23:37:53 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/07 00:29:38 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,19 +47,35 @@ float	find_max(float a, float b)
 // 	fdf->settings->step_y /= fdf->settings->max;
 // }
 
+void	isometric(t_point *point)
+{
+	// printf("pre  point: x: %f y: %f z: %f\n", point->x, point->y, point->z);
+	point->x = (point->x - point->y) * cos((double)0.8);
+	if (point->x + point->y - point->z < 0)
+		printf("bad\n");
+	point->y = (point->x + point->y) * sin((double)0.8) - point->z;
+	// printf("past point: x: %f y: %f z: %f\n", point->x, point->y, point->z);
+}
+
 void	apply_transform(t_point *a, t_point *b, t_fdf *fdf)
 {
 	a->x *= fdf->settings->scale;
 	a->y *= fdf->settings->scale;
 	b->x *= fdf->settings->scale;
 	b->y *= fdf->settings->scale;
-	// x = (x - y) * cos(angle);
-	// y = (x + y) * sin(angle) - 2;
+	// printf("pre pre a: x: %f y: %f z: %f\n", a->x, a->y, a->z);
+	// printf("pre pre b: x: %f y: %f z: %f\n", b->x, b->y, b->z);
+	// printf("a go in\n");
+	isometric(a);
+	// printf("b go in\n");
+	isometric(b);
+	// printf("DONE a: x: %f y: %f z: %f\n", a->x, a->y, a->z);
+	// printf("DONE b: x: %f y: %f z: %f\n", b->x, b->y, b->z);
 	a->x += fdf->settings->shift_x;
 	a->y += fdf->settings->shift_y;
 	b->x += fdf->settings->shift_x;
 	b->y += fdf->settings->shift_y;
-	printf("sx %f, sy %f\n", fdf->settings->shift_x, fdf->settings->shift_y);
+	// printf("sx %f, sy %f\n", fdf->settings->shift_x, fdf->settings->shift_y);
 	fdf->settings->step_x = b->x - a->x;
 	fdf->settings->step_y = b->y - a->y;
 	fdf->settings->max = find_max(ft_abs(fdf->settings->step_x), ft_abs(fdf->settings->step_y));
@@ -69,10 +85,13 @@ void	apply_transform(t_point *a, t_point *b, t_fdf *fdf)
 
 void	bresenham_p(t_point a, t_point b, t_fdf *fdf, uint32_t color)
 {
+	// printf("OMNI BEFORE a: x: %f y: %f z: %f\n", a.x, a.y, a.z);
+	// printf("OMNI BEFORE b: x: %f y: %f z: %f\n", b.x, b.y, b.z);
 	apply_transform(&a, &b, fdf);
 	while ((int)(a.x - b.x) || (int)(a.y - b.y))
 	{
-		mlx_put_pixel(fdf->img, a.x, a.y, color);
+		printf ("a\n");
+		mlx_put_pixel(fdf->img, (int)a.x, (int)a.y, color);
 		a.x += fdf->settings->step_x;
 		a.y += fdf->settings->step_y;
 		if (a.x >= fdf->mlx->width || a.y >= fdf->mlx->height || a.x < 0 || a.y < 0)
@@ -130,6 +149,7 @@ void	draw(t_point **matrix, t_fdf *fdf)
 		printf("x: %i y %i, w: %i h: %i\n", x ,y, fdf->width, fdf->height);
 		while (x < fdf->width)
 		{
+			// printf("OMEGA OMNI OMNI BEFORE a: x: %f y: %f z: %f\n", matrix[y][x].x, matrix[y][x].y, matrix[y][x].z);
 			// if (x + 1 < fdf->width)
 			// 	bresenham(x, y, x + 1, y, fdf, color);
 			// if (y + 1 < fdf->height)
