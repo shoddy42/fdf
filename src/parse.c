@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/05/02 22:05:25 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/04 00:39:07 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/06 23:24:02 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 int	readfile(t_fdf *fdf, char *name)
 {
-	int fd;
-	int i;
-	char *line;
-	int read;
+	int		fd;
+	int		i;
+	int		read;
+	char	*line;
 
 	i = 0;
 	read = 42;
- 	fd = open(name, O_RDONLY);
+	fd = open(name, O_RDONLY);
 	if (!fd)
 		exit (124);
 	while (read > 0)
@@ -30,7 +30,7 @@ int	readfile(t_fdf *fdf, char *name)
 		printf("input line: [%s]\n", line);
 		if (fdf->height == 0)
 		{
-			while(line[i + fdf->width])
+			while (line[i + fdf->width])
 			{
 				if (line[i + fdf->width] == ' ')
 					i++;
@@ -46,7 +46,7 @@ int	readfile(t_fdf *fdf, char *name)
 	return (0);
 }
 
-int fill_map(t_fdf *fdf, char *name)
+int	fill_map(t_fdf *fdf, char *name)
 {
 	int fd;
 	int x;
@@ -67,7 +67,10 @@ int fill_map(t_fdf *fdf, char *name)
 		{
 			while(*line == ' ' || *line == '\n')
 				line++;
-			fdf->map[y][x] = ft_atoi(line);
+			// fdf->map[y][x] = ft_atoi(line);
+			fdf->map[y][x].z = ft_atoi(line);
+			fdf->map[y][x].y = y;
+			fdf->map[y][x].x = x;
 			while(*line >= '0' && *line <= '9')
 				line++;
 		}
@@ -101,11 +104,9 @@ int get_width(char *str)
 		if (str[i] >= '0' && str[i] <= '9')
 		{
 			ret++;
-			// printf("width? [%s] (%i)\n", str, ret);
 			while (str[i] >= '0' && str[i] <= '9')
 				i++;
 		}
-		// i++;
 	}
 	printf("setting width: %i\n", ret);
 	return (ret);
