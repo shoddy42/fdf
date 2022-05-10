@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/05/02 22:05:25 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/07 00:24:56 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/10 02:06:21 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ int	fill_map(t_fdf *fdf, char *name)
 			fdf->map[y][x].z = ft_atoi(line);
 			fdf->map[y][x].y = y;
 			fdf->map[y][x].x = x;
+			fdf->map[y][x].colour = 0xFFFFFF;
 			printf("map[%i][%i]: x = %f, y = %f, z = %f\n", y, x, fdf->map[y][x].x, fdf->map[y][x].y, fdf->map[y][x].z);
 			while(*line >= '0' && *line <= '9')
 				line++;
