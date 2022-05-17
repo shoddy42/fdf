@@ -6,18 +6,88 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/10 02:16:57 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/17 16:36:39 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../fdf.h"
 
-void my_keyhook(mlx_key_data_t keydata, void* param)
+t_point	**scuffed_vec(void)
+{
+	t_point **cube;
+	int x = -1;
+
+	cube = calloc(8, sizeof(t_point *));
+	while (++x < 8)
+	{
+		cube[x] = calloc(1, sizeof(t_point));
+	}
+
+	cube[0][0].x = 1;
+	cube[0][0].y = 1;
+	cube[0][0].z = 1;
+	
+	cube[1][0].x = 1;
+	cube[1][0].y = 5;
+	cube[1][0].z = 1;
+
+	cube[2][0].x = 5;
+	cube[2][0].y = 5;
+	cube[2][0].z = 1;
+
+	cube[3][0].x = 5;
+	cube[3][0].y = 1;
+	cube[3][0].z = 1;
+
+	cube[4][0].x = 1;
+	cube[4][0].y = 1;
+	cube[4][0].z = 5;
+	
+	cube[5][0].x = 1;
+	cube[5][0].y = 5;
+	cube[5][0].z = 5;
+
+	cube[6][0].x = 5;
+	cube[6][0].y = 5;
+	cube[6][0].z = 5;
+
+	cube[7][0].x = 5;
+	cube[7][0].y = 1;
+	cube[7][0].z = 5;
+	return (cube);
+}
+
+void	error(t_fdf *data, const char *message, int code)
+{
+	printf("%s\n", message);
+	//TODO: make a proper freeing function that goes through and frees all that needs to be freed.
+	free(data);
+	exit (code);
+}
+
+void	scrollhook(double xdelta, double ydelta, void *param)
+{
+	t_fdf *data;
+
+	data = param;
+	if (ydelta > 0)
+		data->z_scale -= 0.05;
+	if (ydelta < 0)
+		data->z_scale += 0.05;
+	draw(data->map, data);
+}
+
+void	my_keyhook(mlx_key_data_t keydata, void	*param)
 {
 	t_fdf *fdf;
+	double scale;
 
 	fdf = param;
 
+	scale = 1;
+	if (mlx_is_key_down(fdf->mlx, MLX_KEY_LEFT_SHIFT))
+		scale = 10;
+	// mlx_scrollfunc
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_ESCAPE))
 		mlx_close_window(fdf->mlx);
 	if (keydata.action == MLX_RELEASE)
@@ -41,61 +111,116 @@ void my_keyhook(mlx_key_data_t keydata, void* param)
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_A))
 		fdf->settings->shift_x -= 50;
 
-		
-	if (keydata.key == MLX_KEY_1 && keydata.action == MLX_PRESS)
-		fdf->settings->scale -= 1;
-	if (keydata.key == MLX_KEY_2 && keydata.action == MLX_PRESS)
-		fdf->settings->scale += 1;
-	if (keydata.key == MLX_KEY_E && keydata.action == MLX_PRESS)
-		fdf->angle += 0.1;
-	if (keydata.key == MLX_KEY_Q && keydata.action == MLX_PRESS)
-		fdf->angle -= 0.1;
-	if (keydata.key == MLX_KEY_L && keydata.action == MLX_REPEAT)
-		puts("!");
+	if (keydata.key == MLX_KEY_Z)
+		fdf->z_scale += 0.5 * scale;
+	if (keydata.key == MLX_KEY_X)
+		fdf->z_scale -= 0.5 * scale;
+	if (keydata.key == MLX_KEY_1)
+		fdf->settings->scale -= 1 * scale;
+	if (keydata.key == MLX_KEY_2)
+		fdf->settings->scale += 1 * scale;
+	if (keydata.key == MLX_KEY_E)
+		fdf->angle += 0.03;
+	if (keydata.key == MLX_KEY_Q)
+		fdf->angle -= 0.03;
+	if (keydata.key == MLX_KEY_R)
+		fdf->x_angle += 0.03;
+	if (keydata.key == MLX_KEY_F)
+		fdf->y_angle += 0.03;
+	if (keydata.key == MLX_KEY_V)
+		fdf->z_angle += 0.03;
+
+// 	if (keydata.key == MLX_KEY_L && keydata.action == MLX_REPEAT)
+// 		puts("!");
 	draw(fdf->map, fdf);
+	// draw_cube(fdf);
 }
 
-void init_struct(t_fdf *fdf, char **av)
+
+t_point	translate(t_point original, t_point translation, t_fdf *data)
+{
+	t_point ret;
+	ret.x = original.x + translation.x;
+	ret.y = original.y + translation.y;
+	ret.z = original.z + translation.z;
+	return (ret);
+}
+
+void rotate(t_point *original, t_point rotation, t_fdf *data)
+{
+	t_point ret;
+	ret.x = original->x * (cos(rotation.z) * cos(rotation.y)) + 
+		original->y * (cos(rotation.z) * sin(rotation.y) * sin(rotation.x) - sin(rotation.z) * cos(rotation.x)) +
+		original->z * (cos(rotation.z) * sin(rotation.y) * cos(rotation.x) + sin(rotation.z) * sin(rotation.x));
+	ret.y = original->x * (sin(rotation.z) * cos(rotation.y)) +
+		original->y * (sin(rotation.z) * sin(rotation.y) * sin(rotation.x) + cos(rotation.z) * cos(rotation.x)) +
+		original->z * (sin(rotation.z) * sin(rotation.y) * cos(rotation.x) - cos(rotation.z) * sin(rotation.x));
+	ret.z = original->x * (- sin(rotation.y)) +
+		original->y * (cos(rotation.y) * sin(rotation.x)) +
+		original->z * (cos(rotation.y) * cos(rotation.x));
+	*original = ret;
+}
+
+void apply_perspective(t_point *original, t_fdf *data)
+{
+	t_point ret;
+	ret.x = original->x * data->z0 / (data->z0 + original->z);
+	ret.x = original->y * data->z0 / (data->z0 + original->z);
+	ret.z = original->z;
+	*original = ret;
+}
+
+void	init_struct(t_fdf *data, char **av)
 {
 	int i;
 
+	data->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT, "FdF", true);
+	if (!data->mlx)
+		exit(1);
+	get_height(data, av[1]);
 	i = 0;
-	fdf->width = 0;
-	fdf->height = 0;
-	fdf->error = 0;
-	fdf->angle = 0.8;
-	fdf->settings = malloc(sizeof(t_transform));
-	fdf->settings->scale = 30;
-	fdf->settings->shift_x = 150;
-	fdf->settings->shift_y = 150;
-	get_height(fdf, av[1]);
-	fdf->map = calloc(sizeof(t_point *), fdf->height);
-	if (!fdf->map)
+	data->map = calloc(data->height, sizeof(t_point *));
+	if (!data->map)
 		exit(92);
 	i = -1;
-	while (++i < fdf->height)
-		fdf->map[i] = calloc(sizeof(t_point), fdf->width);
-	fill_map(fdf, av[1]);
-	fdf->mlx = mlx_init(1000, 1000, "FdF", true);
-	if (!fdf->mlx)
-		exit(1);
-	fdf->img = mlx_new_image(fdf->mlx, 1000, 1000);
-	mlx_image_to_window(fdf->mlx, fdf->img, 0 ,0);
-	mlx_key_hook(fdf->mlx, &my_keyhook, fdf);
+	while (++i < data->height)
+		data->map[i] = calloc(data->width, sizeof(t_point));
+	data->settings = calloc(1, sizeof(t_transform));
+	if (!data->settings)
+		exit(120);
+	fill_map(data, av[1]);
+	data->z0 = (WINDOW_WIDTH / 2) / tan((FOV / 2.0)) * M_PI / 180.0;
+	data->distance = 5;
+	data->z_scale = 1;
+	data->settings->scale = 30;
+	data->angle = 0;
+	// data->settings->shift_x = (WINDOW_WIDTH / 2) - ((data->width / 2) * data->settings->scale);
+	// data->settings->shift_y = (WINDOW_HEIGHT / 2) - ((data->height / 2) * data->settings->scale);
+	data->settings->shift_x = WINDOW_WIDTH / 2;
+	data->settings->shift_y = WINDOW_HEIGHT / 2;
+	data->img = mlx_new_image(data->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
+	mlx_image_to_window(data->mlx, data->img, 0 ,0);
+	// mlx_mouse_hook(data->mlx, &my_mousehook, data);
+	mlx_scroll_hook(data->mlx, &scrollhook, data);
+	mlx_key_hook(data->mlx, &my_keyhook, data);
 }
+
 
 int	main(int ac, char **av)
 {
-	t_fdf		*fdf;	
-	fdf = malloc(sizeof(t_fdf));
-	if (ac != 2)
+	t_fdf	data;
+
+	ft_bzero(&data, sizeof(t_fdf));
+	if (ac < 2)
 	{
 		printf ("bad input\n");
 		return (12);
 	}
-	init_struct(fdf, av);
-	mlx_loop(fdf->mlx);
-	mlx_delete_image(fdf->mlx, fdf->img);
-	mlx_terminate(fdf->mlx);
+	init_struct(&data, av);
+	draw(data.map, &data);
+	// draw_cube(&data);
+	mlx_loop(data.mlx);
+	mlx_delete_image(data.mlx, data.img);
+	mlx_terminate(data.mlx);
 	return (0);
 }
