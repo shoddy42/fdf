@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/05/02 22:05:25 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/17 14:23:32 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/24 23:26:54 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,16 @@ int	fill_map(t_fdf *fdf, char *name)
 			while(*line == ' ' || *line == '\n')
 				line++;
 			fdf->map[y][x].z = ft_atoi(line);
+			if (fdf->map[y][x].z > fdf->z_max)
+				fdf->z_max = fdf->map[y][x].z;
+			if (fdf->map[y][x].z < fdf->z_min)
+				fdf->z_min = fdf->map[y][x].z;
 			fdf->map[y][x].y = y;
 			fdf->map[y][x].x = x;
-			fdf->map[y][x].colour = 0xFFFFFF;
+			// if ((int)fdf->map[y][x].z > 0)
+			// 	fdf->map[y][x].colour = 0xFFFF00FF * (int)fdf->map[y][x].z;
+			// else
+				fdf->map[y][x].colour = 0xFFFFFFFF;
 			// printf("map[%i][%i]: x = %f, y = %f, z = %f\n", y, x, fdf->map[y][x].x, fdf->map[y][x].y, fdf->map[y][x].z);
 			while(*line >= '0' && *line <= '9')
 				line++;
@@ -78,6 +85,7 @@ int	fill_map(t_fdf *fdf, char *name)
 		// printf("sengmen\n");
 		y++;
 	}
+	printf("zmin %i zmax %i\n", fdf->z_min, fdf->z_max);
 	// x = 0;
 	// y = -1;
 	// printf("final array H: [%i] W: [%i]\n", fdf->height, fdf->width);
