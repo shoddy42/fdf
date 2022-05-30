@@ -51,3 +51,6 @@ fclean: clean
 re: clean all
 
 .PHONY: all, clean, fclean, re, libmlx, libft
+
+mem:
+	./memdetect/memdetect.sh $(OBJS) $(LIBS) $(HEADERS) -a map42 -il -ie
