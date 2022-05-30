@@ -6,56 +6,11 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/24 23:30:22 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/05/30 09:23:57 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../fdf.h"
-
-t_point	**scuffed_vec(void)
-{
-	t_point **cube;
-	int x = -1;
-
-	cube = calloc(8, sizeof(t_point *));
-	while (++x < 8)
-	{
-		cube[x] = calloc(1, sizeof(t_point));
-	}
-
-	cube[0][0].x = 1;
-	cube[0][0].y = 1;
-	cube[0][0].z = 1;
-	
-	cube[1][0].x = 1;
-	cube[1][0].y = 5;
-	cube[1][0].z = 1;
-
-	cube[2][0].x = 5;
-	cube[2][0].y = 5;
-	cube[2][0].z = 1;
-
-	cube[3][0].x = 5;
-	cube[3][0].y = 1;
-	cube[3][0].z = 1;
-
-	cube[4][0].x = 1;
-	cube[4][0].y = 1;
-	cube[4][0].z = 5;
-	
-	cube[5][0].x = 1;
-	cube[5][0].y = 5;
-	cube[5][0].z = 5;
-
-	cube[6][0].x = 5;
-	cube[6][0].y = 5;
-	cube[6][0].z = 5;
-
-	cube[7][0].x = 5;
-	cube[7][0].y = 1;
-	cube[7][0].z = 5;
-	return (cube);
-}
 
 void	error(t_fdf *data, const char *message, int code)
 {
@@ -69,6 +24,7 @@ void	scrollhook(double xdelta, double ydelta, void *param)
 {
 	t_fdf *data;
 
+	// only adjusts z_scale -- should be finished
 	data = param;
 	if (ydelta > 0)
 		data->z_scale -= 0.05;
@@ -79,6 +35,8 @@ void	scrollhook(double xdelta, double ydelta, void *param)
 
 void	my_keyhook(mlx_key_data_t keydata, void	*param)
 {
+
+	// needs refactoring entirely, probably a subfunction maybe even two.
 	t_fdf *fdf;
 	double magnitude;
 
@@ -140,11 +98,21 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 		fdf->z_angle -= 0.03;
 	if (keydata.key == MLX_KEY_H)
 		fdf->triangles *= -1;
+	if (keydata.key == MLX_KEY_L)
+	{
+		fdf->vector_based *= -1;
+		if (fdf->vector_based == true)
+			printf("vector on\n");
+		else
+			printf("vector off\n");
+	}
 	if (keydata.key == MLX_KEY_J)
 	{
 		fdf->perspective *= -1;
 		fdf->settings->scale += 1200 * fdf->perspective;
 	}
+	if (keydata.key == MLX_KEY_C)
+		fdf->colour *= -1;
 	if (keydata.key == MLX_KEY_K)
 	{
 		fdf->sub_z *= -1;
@@ -153,23 +121,26 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 		else
 			printf("sub z off\n");
 	}
-
-// 	if (keydata.key == MLX_KEY_L && keydata.action == MLX_REPEAT)
-// 		puts("!");
 	if (fdf->settings->scale < 1)
 		fdf->settings->scale = 1;
-
-	// printf("dist: %f\n", fdf->distance);
-	draw(fdf->map, fdf);
-
-	// draw_cube(fdf);
+	// if (mlx_get_time() != fdf->last_sec)
+	// {
+	// 	fdf->last_sec = mlx_get_time();
+	// 	printf("FPS: %i\n", fdf->frames);
+	// 	fdf->frames = 0;
+	// }
+	if (fdf->vector_based == true)
+		draw_vec(fdf->map2, fdf);
+	else
+		draw(fdf->map, fdf);
 }
 
 void	resize(int32_t width, int32_t height, void *param)
 {
+	// fixes resizing issues -- should be finished
 	t_fdf *data;
-	int old_x;
-	int old_y;
+	int32_t old_x;
+	int32_t old_y;
 
 	data = param;
 	ft_bzero(data->img->pixels, data->img->width * data->img->height * sizeof(uint32_t));
@@ -179,46 +150,52 @@ void	resize(int32_t width, int32_t height, void *param)
 	data->settings->shift_x += (width / 2) - (old_x / 2);
 	data->settings->shift_y += (height / 2) - (old_y / 2);
 	draw(data->map, data);
+	// draw_vec(data->map2, &data);
+
 }
 
-t_point	translate(t_point original, t_point translation, t_fdf *data)
+t_point	translate(t_point original, t_point translation)
 {
 	t_point ret;
+	// currently not in use, should replace shift_x and shift_y in a single variable.
 	ret.x = original.x + translation.x;
 	ret.y = original.y + translation.y;
 	ret.z = original.z + translation.z;
 	return (ret);
 }
 
-void rotate(t_point *original, t_point rotation, t_fdf *data)
-{
-	t_point ret;
-	ret.x = original->x * (cos(rotation.z) * cos(rotation.y)) + 
-		original->y * (cos(rotation.z) * sin(rotation.y) * sin(rotation.x) - sin(rotation.z) * cos(rotation.x)) +
-		original->z * (cos(rotation.z) * sin(rotation.y) * cos(rotation.x) + sin(rotation.z) * sin(rotation.x));
-	ret.y = original->x * (sin(rotation.z) * cos(rotation.y)) +
-		original->y * (sin(rotation.z) * sin(rotation.y) * sin(rotation.x) + cos(rotation.z) * cos(rotation.x)) +
-		original->z * (sin(rotation.z) * sin(rotation.y) * cos(rotation.x) - cos(rotation.z) * sin(rotation.x));
-	ret.z = original->x * (- sin(rotation.y)) +
-		original->y * (cos(rotation.y) * sin(rotation.x)) +
-		original->z * (cos(rotation.y) * cos(rotation.x));
-	*original = ret;
-}
+// void rotate(t_point *original, t_point rotation)
+// {
+// 	// currently not in use, should replace all 3 individual rotations at the same time.
+// 	t_point ret;
+// 	ret.x = original->x * (cos(rotation.z) * cos(rotation.y)) + 
+// 		original->y * (cos(rotation.z) * sin(rotation.y) * sin(rotation.x) - sin(rotation.z) * cos(rotation.x)) +
+// 		original->z * (cos(rotation.z) * sin(rotation.y) * cos(rotation.x) + sin(rotation.z) * sin(rotation.x));
+// 	ret.y = original->x * (sin(rotation.z) * cos(rotation.y)) +
+// 		original->y * (sin(rotation.z) * sin(rotation.y) * sin(rotation.x) + cos(rotation.z) * cos(rotation.x)) +
+// 		original->z * (sin(rotation.z) * sin(rotation.y) * cos(rotation.x) - cos(rotation.z) * sin(rotation.x));
+// 	ret.z = original->x * (- sin(rotation.y)) +
+// 		original->y * (cos(rotation.y) * sin(rotation.x)) +
+// 		original->z * (cos(rotation.y) * cos(rotation.x));
+// 	*original = ret;
+// }
 
-void apply_perspective(t_point *original, t_fdf *data)
-{
-	t_point ret;
-	ret.x = original->x * data->z0 / (data->z0 + original->z);
-	ret.x = original->y * data->z0 / (data->z0 + original->z);
-	ret.z = original->z;
-	*original = ret;
-}
+// void apply_perspective(t_point *original, t_fdf *data)
+// {
+// 	// currently broke.
+// 	t_point ret;
+// 	ret.x = original->x * data->z0 / (data->z0 + original->z);
+// 	ret.x = original->y * data->z0 / (data->z0 + original->z);
+// 	ret.z = original->z;
+// 	*original = ret;
+// }
 
 void	init_struct(t_fdf *data, char **av)
 {
 	int i;
-
-	data->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT, "FdF", true);
+	// need to subdivide this into init_struct and init_map, should call init_map in main separately.
+	// might also make a sub function for init_mlx.
+	data->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT, ft_strjoin("FdF - ", av[1]), true);
 	if (!data->mlx)
 		exit(1);
 	data->z_max = INT32_MIN;
@@ -226,11 +203,17 @@ void	init_struct(t_fdf *data, char **av)
 	get_height(data, av[1]);
 	i = 0;
 	data->map = calloc(data->height, sizeof(t_point *));
+	data->map2 = calloc(data->height, sizeof(t_vec_point *));
+	if (!data->map2)
+		exit(97); 
 	if (!data->map)
 		exit(92);
 	i = -1;
 	while (++i < data->height)
 		data->map[i] = calloc(data->width, sizeof(t_point));
+	i = -1;
+	while (++i < data->height)
+		data->map2[i] = calloc(data->width, sizeof(t_vec_point));
 	data->settings = calloc(1, sizeof(t_transform));
 	if (!data->settings)
 		exit(120);
@@ -245,7 +228,9 @@ void	init_struct(t_fdf *data, char **av)
 	data->z_angle = 0.7;
 	data->triangles = -1;
 	data->perspective = -1;
+	data->colour = -1;
 	data->sub_z = -1;
+	data->vector_based = -1;
 	data->settings->shift_x = WINDOW_WIDTH / 2;
 	data->settings->shift_y = WINDOW_HEIGHT / 2;
 	data->img = mlx_new_image(data->mlx, data->mlx->width, data->mlx->height);
@@ -254,25 +239,25 @@ void	init_struct(t_fdf *data, char **av)
 	mlx_scroll_hook(data->mlx, &scrollhook, data);
 	mlx_key_hook(data->mlx, &my_keyhook, data);
 	mlx_resize_hook(data->mlx, &resize, data);
-	draw(data->map, data);
+	draw(data->map2, data);
 }
 
 
 int	main(int ac, char **av)
 {
-	unsigned int	 i = 0;
-	unsigned int j = 0;
 	t_fdf	data;
 
 	ft_bzero(&data, sizeof(t_fdf));
+	// if ac < 2, give warning and draw cube
 	if (ac < 2)
 	{
 		printf ("bad input\n");
 		return (12);
 	}
+	// if ac > 3 give warning there were too many args, still attempt to move on
 	init_struct(&data, av);
-	// draw_cube(&data);
-	draw(data.map, &data);
+	// draw(data.map, &data);
+	draw_vec(data.map2, &data);
 	mlx_loop(data.mlx);
 	mlx_delete_image(data.mlx, data.img);
 	mlx_terminate(data.mlx);
