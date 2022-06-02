@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:54:58 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/30 09:40:52 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/06/01 16:49:50 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # define X 0
 # define Y 1
 # define Z 2
+# define W 3
 # include "MLX42/include/MLX42/MLX42.h"
 # include "src/get_next_line_bonus.h"
 # include "libft/libft.h"
@@ -27,14 +28,13 @@
 # include <unistd.h>
 # include <math.h>
 
-typedef double	t_vec __attribute__ ((vector_size (3 * sizeof(double))));
+typedef double	t_vec __attribute__ ((vector_size (4 * sizeof(double))));
 
 typedef struct s_point
 {
 	double		x;
 	double		y;
 	double		z;
-	// t_vec		vec;
 	uint32_t	colour;
 }				t_point;
 
@@ -49,8 +49,6 @@ typedef struct s_transform
 	float	max;
 	float	step_x;
 	float	step_y;
-	float	shift_x;
-	float	shift_y;
 	int		scale;
 	float	start_x;
 	float	start_y;
@@ -58,15 +56,8 @@ typedef struct s_transform
 	double	b_z;
 	float	fraction;
 	float	f_step;
+	t_vec	shift;
 }				t_transform;
-
-typedef struct s_line
-{
-	double oaz;
-	double obz;
-
-
-}	t_line;
 
 typedef struct s_gradient
 {
@@ -87,6 +78,7 @@ typedef struct s_fdf
 
 	// GOES INTO T_MAP PROBABLY
 	t_transform	*settings;
+	t_vec		transpose;
 	int			width;
 	int			height;
 	double		angle;
@@ -105,6 +97,7 @@ typedef struct s_fdf
 	int			vector_based;
 	int			frames;
 	int			last_sec;
+	int			loop;
 }				t_fdf;
 
 void	draw(t_point **matrix, t_fdf *fdf);

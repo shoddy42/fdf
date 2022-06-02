@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/05/30 09:23:57 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/06/01 16:53:16 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ void	scrollhook(double xdelta, double ydelta, void *param)
 		data->z_scale -= 0.05;
 	if (ydelta < 0)
 		data->z_scale += 0.05;
-	draw(data->map, data);
 }
 
 void	my_keyhook(mlx_key_data_t keydata, void	*param)
@@ -50,22 +49,22 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 	if (keydata.action == MLX_RELEASE)
 		return ;
 	if (keydata.key == MLX_KEY_UP || mlx_is_key_down(fdf->mlx, MLX_KEY_UP))
-		fdf->settings->shift_y -= 1;
+		fdf->transpose[Y] -= 1;
 	if (keydata.key == MLX_KEY_DOWN || mlx_is_key_down(fdf->mlx, MLX_KEY_DOWN))
-		fdf->settings->shift_y += 1;
+		fdf->transpose[Y] += 1;
 	if (keydata.key == MLX_KEY_RIGHT || mlx_is_key_down(fdf->mlx, MLX_KEY_RIGHT))
-		fdf->settings->shift_x += 1;
+		fdf->transpose[X] += 1;
 	if (keydata.key == MLX_KEY_LEFT || mlx_is_key_down(fdf->mlx, MLX_KEY_LEFT))
-		fdf->settings->shift_x -= 1;
+		fdf->transpose[X] -= 1;
 
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_W))
-		fdf->settings->shift_y -= 50;
+		fdf->transpose[Y] -= 50;
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_S))
-		fdf->settings->shift_y += 50;
+		fdf->transpose[Y] += 50;
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_D))
-		fdf->settings->shift_x += 50;
+		fdf->transpose[X] += 50;
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_A))
-		fdf->settings->shift_x -= 50;
+		fdf->transpose[X] -= 50;
 
 	if (keydata.key == MLX_KEY_Z)
 		fdf->z_scale += 0.5 * magnitude;
@@ -99,13 +98,9 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 	if (keydata.key == MLX_KEY_H)
 		fdf->triangles *= -1;
 	if (keydata.key == MLX_KEY_L)
-	{
 		fdf->vector_based *= -1;
-		if (fdf->vector_based == true)
-			printf("vector on\n");
-		else
-			printf("vector off\n");
-	}
+	if (keydata.key == MLX_KEY_O)
+		fdf->loop *= -1;
 	if (keydata.key == MLX_KEY_J)
 	{
 		fdf->perspective *= -1;
@@ -123,16 +118,16 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 	}
 	if (fdf->settings->scale < 1)
 		fdf->settings->scale = 1;
-	// if (mlx_get_time() != fdf->last_sec)
-	// {
-	// 	fdf->last_sec = mlx_get_time();
-	// 	printf("FPS: %i\n", fdf->frames);
-	// 	fdf->frames = 0;
-	// }
-	if (fdf->vector_based == true)
-		draw_vec(fdf->map2, fdf);
-	else
-		draw(fdf->map, fdf);
+}
+
+void	hook(void *param)
+{
+	t_fdf *data;
+	
+	data = param;
+	draw_vec(data->map2, data);
+	// printf ("drawn\n");
+		printf("dtime: %f\n", data->mlx->delta_time);
 }
 
 void	resize(int32_t width, int32_t height, void *param)
@@ -147,48 +142,10 @@ void	resize(int32_t width, int32_t height, void *param)
 	old_x = data->img->width;
 	old_y = data->img->height;
 	mlx_resize_image(data->img, width, height);
-	data->settings->shift_x += (width / 2) - (old_x / 2);
-	data->settings->shift_y += (height / 2) - (old_y / 2);
-	draw(data->map, data);
-	// draw_vec(data->map2, &data);
-
+	data->transpose[X] += (width / 2) - (old_x / 2);
+	data->transpose[Y] += (height / 2) - (old_y / 2);
 }
 
-t_point	translate(t_point original, t_point translation)
-{
-	t_point ret;
-	// currently not in use, should replace shift_x and shift_y in a single variable.
-	ret.x = original.x + translation.x;
-	ret.y = original.y + translation.y;
-	ret.z = original.z + translation.z;
-	return (ret);
-}
-
-// void rotate(t_point *original, t_point rotation)
-// {
-// 	// currently not in use, should replace all 3 individual rotations at the same time.
-// 	t_point ret;
-// 	ret.x = original->x * (cos(rotation.z) * cos(rotation.y)) + 
-// 		original->y * (cos(rotation.z) * sin(rotation.y) * sin(rotation.x) - sin(rotation.z) * cos(rotation.x)) +
-// 		original->z * (cos(rotation.z) * sin(rotation.y) * cos(rotation.x) + sin(rotation.z) * sin(rotation.x));
-// 	ret.y = original->x * (sin(rotation.z) * cos(rotation.y)) +
-// 		original->y * (sin(rotation.z) * sin(rotation.y) * sin(rotation.x) + cos(rotation.z) * cos(rotation.x)) +
-// 		original->z * (sin(rotation.z) * sin(rotation.y) * cos(rotation.x) - cos(rotation.z) * sin(rotation.x));
-// 	ret.z = original->x * (- sin(rotation.y)) +
-// 		original->y * (cos(rotation.y) * sin(rotation.x)) +
-// 		original->z * (cos(rotation.y) * cos(rotation.x));
-// 	*original = ret;
-// }
-
-// void apply_perspective(t_point *original, t_fdf *data)
-// {
-// 	// currently broke.
-// 	t_point ret;
-// 	ret.x = original->x * data->z0 / (data->z0 + original->z);
-// 	ret.x = original->y * data->z0 / (data->z0 + original->z);
-// 	ret.z = original->z;
-// 	*original = ret;
-// }
 
 void	init_struct(t_fdf *data, char **av)
 {
@@ -218,28 +175,35 @@ void	init_struct(t_fdf *data, char **av)
 	if (!data->settings)
 		exit(120);
 	fill_map(data, av[1]);
+
 	data->z0 = (WINDOW_WIDTH / 2) / tan((FOV / 2.0)) * M_PI / 180.0;
 	data->distance = 50;
+
 	data->z_scale = 0.15;
 	data->settings->scale = 30;
+
 	data->angle = 0;
 	data->x_angle = 0.4;
 	data->y_angle = -0.4;
 	data->z_angle = 0.7;
+
 	data->triangles = -1;
 	data->perspective = -1;
 	data->colour = -1;
 	data->sub_z = -1;
 	data->vector_based = -1;
-	data->settings->shift_x = WINDOW_WIDTH / 2;
-	data->settings->shift_y = WINDOW_HEIGHT / 2;
+	
+	data->transpose[X] = WINDOW_WIDTH / 2;
+	data->transpose[Y] = WINDOW_HEIGHT / 2;
+
 	data->img = mlx_new_image(data->mlx, data->mlx->width, data->mlx->height);
 	mlx_image_to_window(data->mlx, data->img, 0 ,0);
 	// mlx_mouse_hook(data->mlx, &my_mousehook, data);
 	mlx_scroll_hook(data->mlx, &scrollhook, data);
 	mlx_key_hook(data->mlx, &my_keyhook, data);
 	mlx_resize_hook(data->mlx, &resize, data);
-	draw(data->map2, data);
+	mlx_loop_hook(data->mlx, &hook, data);
+	draw_vec(data->map2, data);
 }
 
 
@@ -256,7 +220,6 @@ int	main(int ac, char **av)
 	}
 	// if ac > 3 give warning there were too many args, still attempt to move on
 	init_struct(&data, av);
-	// draw(data.map, &data);
 	draw_vec(data.map2, &data);
 	mlx_loop(data.mlx);
 	mlx_delete_image(data.mlx, data.img);
