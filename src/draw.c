@@ -85,8 +85,8 @@ void	project(t_point *original, t_fdf *data)
 	double depth;
 
 	depth = 1 / (data->distance - original->z);
-	// if (depth <= 0)
-	// 	depth = 1;
+	if (depth <= 0)
+		depth = 1;
 	projected.x = original->x * depth;
 	projected.y = original->y * depth;
 	projected.z = original->z * depth;
@@ -124,24 +124,24 @@ uint32_t interpolate(uint32_t color1, uint32_t color2, float fraction)
 				(int) ((a2 - a1) * fraction + a1));
 }
 
-uint32_t interpol_col(t_point *a, t_point *b, t_fdf *data)
-{
-	t_point *tmp;
-	u_int32_t col;
+// uint32_t interpol_col(t_point *a, t_point *b, t_fdf *data)
+// {
+// 	t_point *tmp;
+// 	u_int32_t col;
 
-	if (data->colour != true)
-		return (a->colour);
-	if (a->x == data->settings->start_x)
-		return (a->colour);
-	if (a->x == b->x)
-		return (b->colour);
-	data->settings->f_step = fabs(a->x / b->x);
-	data->settings->fraction = data->settings->f_step;
-	// printf("frac = %f\n", data->settings->fraction);
-	col = interpolate(a->colour, b->colour, 0.5);
-	// col = interpolate(a->colour, b->colour, data->settings->fraction);
-	return(col);
-}
+// 	if (data->colour != true)
+// 		return (a->colour);
+// 	if (a->x == data->settings->start_x)
+// 		return (a->colour);
+// 	if (a->x == b->x)
+// 		return (b->colour);
+// 	data->settings->f_step = fabs(a->x / b->x);
+// 	data->settings->fraction = data->settings->f_step;
+// 	// printf("frac = %f\n", data->settings->fraction);
+// 	col = interpolate(a->colour, b->colour, 0.5);
+// 	// col = interpolate(a->colour, b->colour, data->settings->fraction);
+// 	return(col);
+// }
 
 uint32_t interpol_vec_col(t_vec_point *a, t_vec_point *b, t_fdf *data)
 {
@@ -150,9 +150,10 @@ uint32_t interpol_vec_col(t_vec_point *a, t_vec_point *b, t_fdf *data)
 
 	if (data->colour != true)
 		return(a->colour);
-	data->settings->f_step = fabs(a->vec[X] / b->vec[X]);
-	data->settings->fraction = data->settings->f_step;
-	// printf("frac = %f\n", data->settings->fraction);
+	// data->settings->f_step = fabs(a->vec[X] / b->vec[X]);
+	// data->settings->fraction = data->settings->f_step;
+	data->settings->fraction = fabs((a->vec[Y] - data->settings->start_y) / (b->vec[Y] - data->settings->start_y));
+	// printf("frac = %f aY = %f bY = %f start_y = %f\n", data->settings->fraction, a->vec[Y], b->vec[Y], data->settings->start_y);
 	// col = interpolate(a->colour, b->colour, 0.9);
 	col = interpolate(a->colour, b->colour, data->settings->fraction);
 	return(col);
@@ -164,10 +165,10 @@ void	vec_matrixes(t_vec_point *point, t_fdf *data)
 
 	subtract(point, data);
 	point->vec[Z] *= data->z_scale;
-	// rotate(point, data);
-	rotateX(point, data->angle + data->x_angle);
-	rotateY(point, data->angle + data->y_angle);
-	rotateZ(point, data->angle + data->z_angle);
+	rotate(point, data);
+	// rotateX(point, data->angle + data->x_angle);
+	// rotateY(point, data->angle + data->y_angle);
+	// rotateZ(point, data->angle + data->z_angle);
 	if (data->perspective == true)
 		project(point, data);
 	point->vec *= scale;
@@ -181,10 +182,10 @@ void	apply_vec_transform(t_vec_point *a, t_vec_point *b, t_fdf *fdf)
 	fdf->settings->fraction = 0;
 	fdf->settings->a_z = a->vec[Z];
 	fdf->settings->b_z = b->vec[Z];
-	fdf->settings->start_x = a->vec[X];
-	fdf->settings->start_y = a->vec[Y];
 	vec_matrixes(a, fdf);
 	vec_matrixes(b, fdf);
+	fdf->settings->start_x = a->vec[X];
+	fdf->settings->start_y = a->vec[Y];
 	fdf->settings->step_x = b->vec[X] - a->vec[X];
 	fdf->settings->step_y = b->vec[Y] - a->vec[Y];
 	fdf->settings->max = find_max(fabs(fdf->settings->step_x), fabs(fdf->settings->step_y));
@@ -213,13 +214,14 @@ void	bresenham_vec(t_vec_point a, t_vec_point b, t_fdf *data)
 	while ((int)(a.vec[X] - b.vec[X]) || (int)(a.vec[Y] - b.vec[Y]))
 	{
 		colour = interpol_vec_col(&a, &b, data);
+		// printf("stepx: %f stepy: %f\n", data->settings->step_x, data->settings->step_y);
 		if (vec_inbounds(data, a))
 			mlx_put_pixel(data->img, (int)(a.vec[X]), (int)(a.vec[Y]), colour);
 		a.vec[X] += data->settings->step_x;
 		a.vec[Y] += data->settings->step_y;
 	}
 	// if (data->colour == true)
-	colour = interpol_col(&a, &b, data);
+	colour = interpol_vec_col(&a, &b, data);
 	if (vec_inbounds(data, a))
 		mlx_put_pixel(data->img, (int)a.vec[X], (int)a.vec[Y], colour);
 } 
@@ -230,6 +232,7 @@ void	draw_vec(t_vec_point **matrix, t_fdf *fdf)
 	int	y;
 
 	y = 0;
+	
 	ft_bzero(fdf->img->pixels, fdf->img->width * fdf->img->height * sizeof(uint32_t));
 	while (y < fdf->height)
 	{

@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/06/01 16:53:16 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/09/07 10:14:23 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	hook(void *param)
 	data = param;
 	draw_vec(data->map2, data);
 	// printf ("drawn\n");
-		printf("dtime: %f\n", data->mlx->delta_time);
+		// printf("dtime: %f\n", data->mlx->delta_time);
 }
 
 void	resize(int32_t width, int32_t height, void *param)
@@ -189,7 +189,7 @@ void	init_struct(t_fdf *data, char **av)
 
 	data->triangles = -1;
 	data->perspective = -1;
-	data->colour = -1;
+	data->colour = 1;
 	data->sub_z = -1;
 	data->vector_based = -1;
 	
