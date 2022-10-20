@@ -6,25 +6,24 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/09/07 10:14:23 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 20:26:43 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../fdf.h"
 
+//TODO: make a proper freeing function that goes through and frees all that needs to be freed.
 void	error(t_fdf *data, const char *message, int code)
 {
-	printf("%s\n", message);
-	//TODO: make a proper freeing function that goes through and frees all that needs to be freed.
+	// printf("%s\n", message); // illegal function
 	free(data);
 	exit (code);
 }
 
 void	scrollhook(double xdelta, double ydelta, void *param)
 {
-	t_fdf *data;
+	t_fdf	*data;
 
-	// only adjusts z_scale -- should be finished
 	data = param;
 	if (ydelta > 0)
 		data->z_scale -= 0.05;
@@ -34,13 +33,10 @@ void	scrollhook(double xdelta, double ydelta, void *param)
 
 void	my_keyhook(mlx_key_data_t keydata, void	*param)
 {
-
-	// needs refactoring entirely, probably a subfunction maybe even two.
-	t_fdf *fdf;
-	double magnitude;
+	t_fdf	*fdf;
+	double	magnitude;
 
 	fdf = param;
-
 	magnitude = 1;
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_LEFT_SHIFT))
 		magnitude = 10;
@@ -56,7 +52,6 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 		fdf->transpose[X] += 1;
 	if (keydata.key == MLX_KEY_LEFT || mlx_is_key_down(fdf->mlx, MLX_KEY_LEFT))
 		fdf->transpose[X] -= 1;
-
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_W))
 		fdf->transpose[Y] -= 50;
 	if (mlx_is_key_down(fdf->mlx, MLX_KEY_S))
@@ -97,10 +92,6 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 		fdf->z_angle -= 0.03;
 	if (keydata.key == MLX_KEY_H)
 		fdf->triangles *= -1;
-	if (keydata.key == MLX_KEY_L)
-		fdf->vector_based *= -1;
-	if (keydata.key == MLX_KEY_O)
-		fdf->loop *= -1;
 	if (keydata.key == MLX_KEY_J)
 	{
 		fdf->perspective *= -1;
@@ -109,36 +100,28 @@ void	my_keyhook(mlx_key_data_t keydata, void	*param)
 	if (keydata.key == MLX_KEY_C)
 		fdf->colour *= -1;
 	if (keydata.key == MLX_KEY_K)
-	{
 		fdf->sub_z *= -1;
-		if (fdf->sub_z == true)
-			printf("sub z on\n");
-		else
-			printf("sub z off\n");
-	}
 	if (fdf->settings->scale < 1)
 		fdf->settings->scale = 1;
 }
 
 void	hook(void *param)
 {
-	t_fdf *data;
-	
+	t_fdf	*data;
+
 	data = param;
-	draw_vec(data->map2, data);
-	// printf ("drawn\n");
-		// printf("dtime: %f\n", data->mlx->delta_time);
+	draw_vec(data->map, data);
 }
 
 void	resize(int32_t width, int32_t height, void *param)
 {
-	// fixes resizing issues -- should be finished
-	t_fdf *data;
-	int32_t old_x;
-	int32_t old_y;
+	t_fdf	*data;
+	int32_t	old_x;
+	int32_t	old_y;
 
 	data = param;
-	ft_bzero(data->img->pixels, data->img->width * data->img->height * sizeof(uint32_t));
+	ft_bzero(data->img->pixels, data->img->width
+		* data->img->height * sizeof(uint32_t));
 	old_x = data->img->width;
 	old_y = data->img->height;
 	mlx_resize_image(data->img, width, height);
@@ -146,31 +129,24 @@ void	resize(int32_t width, int32_t height, void *param)
 	data->transpose[Y] += (height / 2) - (old_y / 2);
 }
 
-
 void	init_struct(t_fdf *data, char **av)
 {
-	int i;
-	// need to subdivide this into init_struct and init_map, should call init_map in main separately.
-	// might also make a sub function for init_mlx.
-	data->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT, ft_strjoin("FdF - ", av[1]), true);
+	int	i;
+
+	data->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT,
+			ft_strjoin("FdF - ", av[1]), true);
 	if (!data->mlx)
 		exit(1);
 	data->z_max = INT32_MIN;
 	data->z_min = INT32_MAX;
 	get_height(data, av[1]);
 	i = 0;
-	data->map = calloc(data->height, sizeof(t_point *));
-	data->map2 = calloc(data->height, sizeof(t_vec_point *));
-	if (!data->map2)
-		exit(97); 
+	data->map = calloc(data->height, sizeof(t_vec_point *));
 	if (!data->map)
-		exit(92);
+		exit(97); 
 	i = -1;
 	while (++i < data->height)
-		data->map[i] = calloc(data->width, sizeof(t_point));
-	i = -1;
-	while (++i < data->height)
-		data->map2[i] = calloc(data->width, sizeof(t_vec_point));
+		data->map[i] = calloc(data->width, sizeof(t_vec_point));
 	data->settings = calloc(1, sizeof(t_transform));
 	if (!data->settings)
 		exit(120);
@@ -191,7 +167,6 @@ void	init_struct(t_fdf *data, char **av)
 	data->perspective = -1;
 	data->colour = 1;
 	data->sub_z = -1;
-	data->vector_based = -1;
 	
 	data->transpose[X] = WINDOW_WIDTH / 2;
 	data->transpose[Y] = WINDOW_HEIGHT / 2;
@@ -203,24 +178,25 @@ void	init_struct(t_fdf *data, char **av)
 	mlx_key_hook(data->mlx, &my_keyhook, data);
 	mlx_resize_hook(data->mlx, &resize, data);
 	mlx_loop_hook(data->mlx, &hook, data);
-	draw_vec(data->map2, data);
+	draw_vec(data->map, data);
 }
-
 
 int	main(int ac, char **av)
 {
 	t_fdf	data;
 
 	ft_bzero(&data, sizeof(t_fdf));
-	// if ac < 2, give warning and draw cube
 	if (ac < 2)
 	{
 		printf ("bad input\n");
 		return (12);
 	}
-	// if ac > 3 give warning there were too many args, still attempt to move on
+	if (ac > 3)
+	{
+		printf ("too much input. only using one or smth\n");
+	}
 	init_struct(&data, av);
-	draw_vec(data.map2, &data);
+	draw_vec(data.map, &data);
 	mlx_loop(data.mlx);
 	mlx_delete_image(data.mlx, data.img);
 	mlx_terminate(data.mlx);

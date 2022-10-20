@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:54:58 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/06/01 16:49:50 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 20:25:43 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,18 @@
 # include <math.h>
 
 typedef double	t_vec __attribute__ ((vector_size (4 * sizeof(double))));
+
+typedef struct s_interpolate
+{
+	unsigned char	r1;
+	unsigned char	r2;
+	unsigned char	g1;
+	unsigned char	g2;
+	unsigned char	b1;
+	unsigned char	b2;
+	unsigned char	a1;
+	unsigned char	a2;
+}				t_interpolate;
 
 typedef struct s_point
 {
@@ -73,10 +85,9 @@ typedef struct s_fdf
 	mlx_t		*mlx;
 	mlx_image_t	*img;
 	char		*title;
-	t_point		**map;
-	t_vec_point **map2;
+	// t_point		**map;
+	t_vec_point	**map;
 
-	// GOES INTO T_MAP PROBABLY
 	t_transform	*settings;
 	t_vec		transpose;
 	int			width;
@@ -94,24 +105,21 @@ typedef struct s_fdf
 	int			z_max;
 	int			z_min;
 	int			colour;
-	int			vector_based;
 	int			frames;
 	int			last_sec;
-	int			loop;
 }				t_fdf;
 
-void	draw(t_point **matrix, t_fdf *fdf);
+// void	draw(t_point **matrix, t_fdf *fdf);
 void	draw_vec(t_vec_point **matrix, t_fdf *fdf);
-void	bresenham_p(t_point a, t_point b, t_fdf *fdf);
-// void	rotate(t_point *original, t_point rotation);
-void rotate(t_vec_point *original, t_fdf *data);
+// void	bresenham_p(t_point a, t_point b, t_fdf *fdf);
+void	rotate(t_vec_point *original, t_fdf *data);
 
 /****************************\
  * 		util functions		*
 \****************************/
 
-t_point	**scuffed_vec(void);
-void	apply_perspective(t_point *original, t_fdf *data);
+// t_point	**scuffed_vec(void);
+// void	apply_perspective(t_point *original, t_fdf *data);
 
 // 0x88428C0 == nice greeny
 // 0x9E4C8C0 == spectraly blue

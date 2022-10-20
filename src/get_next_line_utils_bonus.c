@@ -6,14 +6,14 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/01/08 11:59:50 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/04/13 17:48:13 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 18:07:27 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 #include <stdlib.h>
 
-int		gnl_chrlen(const char *str, char c)
+int	gnl_chrlen(const char *str, char c)
 {
 	size_t	i;
 

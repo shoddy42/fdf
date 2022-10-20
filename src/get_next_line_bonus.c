@@ -6,14 +6,14 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2020/01/08 11:59:59 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/04/13 20:54:39 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 18:07:10 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 #include <stdlib.h>
 
-int		handle_final(char **buff, char **line, int fd, int ret)
+int	handle_final(char **buff, char **line, int fd, int ret)
 {
 	int		i;
 
@@ -30,7 +30,7 @@ int		handle_final(char **buff, char **line, int fd, int ret)
 	return (ret);
 }
 
-int		handle_error(char **buff, int fd)
+int	handle_error(char **buff, int fd)
 {
 	if (buff[fd])
 	{
@@ -40,7 +40,7 @@ int		handle_error(char **buff, int fd)
 	return (-1);
 }
 
-int		handle_newline(char **buff, char **line, int fd)
+int	handle_newline(char **buff, char **line, int fd)
 {
 	char	*copy;
 
@@ -59,7 +59,7 @@ int		handle_newline(char **buff, char **line, int fd)
 		return (-1);
 }
 
-int		get_next_line(int fd, char **line)
+int	get_next_line(int fd, char **line)
 {
 	int				ret;
 	static char		*buff[10240];
