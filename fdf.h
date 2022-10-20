@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:54:58 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/10/20 20:41:38 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 23:30:34 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,6 @@
 # define FDF_H
 # define WINDOW_WIDTH 1000
 # define WINDOW_HEIGHT 1000
-# define FOV 120
-# define X 0
-# define Y 1
-# define Z 2
-# define W 3
 # include "MLX42/include/MLX42/MLX42.h"
 # include "src/get_next_line_bonus.h"
 # include "libft/libft.h"
@@ -29,6 +24,14 @@
 # include <math.h>
 
 typedef double	t_vec __attribute__ ((vector_size (4 * sizeof(double))));
+
+typedef enum e_vecnum
+{
+	X,
+	Y,
+	Z,
+	W
+}	t_vecnum;
 
 typedef struct s_interpolate
 {
@@ -41,14 +44,6 @@ typedef struct s_interpolate
 	unsigned char	a1;
 	unsigned char	a2;
 }				t_interpolate;
-
-typedef struct s_point
-{
-	double		x;
-	double		y;
-	double		z;
-	uint32_t	colour;
-}				t_point;
 
 typedef struct s_vec_point
 {
@@ -84,12 +79,11 @@ typedef struct s_fdf
 {
 	mlx_t		*mlx;
 	mlx_image_t	*img;
-	char		*title;
-	// t_point		**map;
 	t_vec_point	**map;
-
 	t_transform	*settings;
 	t_vec		transpose;
+	t_vec		vec_angle;
+	char		*title;
 	int			width;
 	int			height;
 	double		angle;
@@ -98,7 +92,6 @@ typedef struct s_fdf
 	double		z_angle;
 	double		distance;
 	double		z_scale;
-	double		z0;
 	int			perspective;
 	int			triangles;
 	int			sub_z;
@@ -110,25 +103,36 @@ typedef struct s_fdf
 }				t_fdf;
 
 // void	draw(t_point **matrix, t_fdf *fdf);
-void	draw_vec(t_vec_point **matrix, t_fdf *fdf);
+void		draw_vec(t_vec_point **matrix, t_fdf *fdf);
 // void	bresenham_p(t_point a, t_point b, t_fdf *fdf);
-void	rotate(t_vec_point *original, t_fdf *data);
+void		rotate(t_vec_point *original, t_fdf *data);
 
 /****************************\
  * 		util functions		*
 \****************************/
 
 // vector_operations.c
-void	rotate(t_vec_point *og, t_fdf *data);
-void	project(t_vec_point *original, t_fdf *data);
-void	subtract(t_vec_point *original, t_fdf *data);
+void		rotate(t_vec_point *og, t_fdf *data);
+void		project(t_vec_point *original, t_fdf *data);
+void		subtract(t_vec_point *original, t_fdf *data);
 
 // draw_utils.c
-float	find_max(float a, float b);
-bool	vec_inbounds(t_fdf *fdf, t_vec_point a);
-// uint32_t	interpolate(uint32_t color1, uint32_t color2, float fraction);
+float		find_max(float a, float b);
+bool		vec_inbounds(t_fdf *fdf, t_vec_point a);
 uint32_t	interpol_vec_col(t_vec_point *a, t_vec_point *b, t_fdf *data);
 
+// keyhooks.c
+void		resize(int32_t width, int32_t height, void *param);
+
+void		scrollhook(double xdelta, double ydelta, void *param);
+void		hook(void *param);
+
+void		my_keyhook(mlx_key_data_t keydata, void *param);
+
+int			get_height(t_fdf *fdf, char *name);
+int			get_width(char *str);
+
+void		fdf_error(t_fdf	*data, const char *message, int code);
 // 0x88428C0 == nice greeny
 // 0x9E4C8C0 == spectraly blue
 // 0xB2E7E0 == sky blue

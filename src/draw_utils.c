@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/20 20:32:40 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/10/20 20:37:53 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 21:41:38 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,20 +21,17 @@ float	find_max(float a, float b)
 
 bool	vec_inbounds(t_fdf *fdf, t_vec_point a)
 {
-	bool	ret;
-
-	ret = true;
 	if (!((int)a.vec[X] < fdf->img->width && (int)a.vec[Y] < fdf->img->height
 			&& (int)a.vec[X] > 0 && (int)a.vec[Y] > 0))
 	{
-		ret = false;
+		return (false);
 	}
 	if (fdf->img->pixels[((int)a.vec[Y] * fdf->img->width
 				+ (int)a.vec[X]) * sizeof(int32_t)] != NULL)
 	{
-		ret = false;
+		return (false);
 	}
-	return (ret);
+	return (true);
 }
 
 uint32_t	interpolate(uint32_t color1, uint32_t color2, float fraction)

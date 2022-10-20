@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/20 20:33:08 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/10/20 20:33:40 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 23:13:42 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	rotate(t_vec_point *og, t_fdf *data)
 void	project(t_vec_point *original, t_fdf *data)
 {
 	t_vec_point	projected;
-	double	depth;
+	double		depth;
 
 	depth = 1 / (data->distance - original->vec[Z]);
 	if (depth <= 0)

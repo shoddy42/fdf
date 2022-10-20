@@ -1,6 +1,7 @@
 # //= Variables =//
 
 NAME	= fdf
+FLAGS	= -Wall -Wextra -Werror
 CFLAGS	= -w -Wunreachable-code -Ofast
 LIBMLX	= MLX42
 LIBFT	= libft
@@ -33,7 +34,7 @@ libmlx:
 	@$(MAKE) -C $(LIBMLX)
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -o $@ -c $< $(HEADERS) && printf "$(GREEN)$(BOLD)\rCompiling: $(notdir $<)\r\e[35C[OK]\n$(RESET)"
+	@$(CC) $(FLAGS) $(CFLAGS) -o $@ -c $< $(HEADERS) && printf "$(GREEN)$(BOLD)\rCompiling: $(notdir $<)\r\e[35C[OK]\n$(RESET)"
 
 $(NAME): $(OBJS)
 	@$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME)
