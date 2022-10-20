@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:54:58 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/10/20 20:25:43 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 20:41:38 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,8 +118,16 @@ void	rotate(t_vec_point *original, t_fdf *data);
  * 		util functions		*
 \****************************/
 
-// t_point	**scuffed_vec(void);
-// void	apply_perspective(t_point *original, t_fdf *data);
+// vector_operations.c
+void	rotate(t_vec_point *og, t_fdf *data);
+void	project(t_vec_point *original, t_fdf *data);
+void	subtract(t_vec_point *original, t_fdf *data);
+
+// draw_utils.c
+float	find_max(float a, float b);
+bool	vec_inbounds(t_fdf *fdf, t_vec_point a);
+// uint32_t	interpolate(uint32_t color1, uint32_t color2, float fraction);
+uint32_t	interpol_vec_col(t_vec_point *a, t_vec_point *b, t_fdf *data);
 
 // 0x88428C0 == nice greeny
 // 0x9E4C8C0 == spectraly blue

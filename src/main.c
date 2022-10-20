@@ -6,7 +6,7 @@
 /*   By: wkonings <wkonings@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/03/24 21:16:22 by wkonings      #+#    #+#                 */
-/*   Updated: 2022/10/20 20:26:43 by wkonings      ########   odam.nl         */
+/*   Updated: 2022/10/20 20:32:07 by wkonings      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,7 @@ void	init_struct(t_fdf *data, char **av)
 	if (!data->map)
 		exit(97); 
 	i = -1;
+	//TODO: calloc protection.
 	while (++i < data->height)
 		data->map[i] = calloc(data->width, sizeof(t_vec_point));
 	data->settings = calloc(1, sizeof(t_transform));
